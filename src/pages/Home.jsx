@@ -1,219 +1,167 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../services/api";
 
 function Home() {
   const [movies, setMovies] = useState([]);
   const [search, setSearch] = useState("batman");
-  const [page, setPage] = useState(1);
-  const [type, setType] = useState("");
-  const [year, setYear] = useState("");
-  const [sort, setSort] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [favorites, setFavorites] = useState(() => {
     const saved = localStorage.getItem("favorites");
     return saved ? JSON.parse(saved) : [];
   });
+  const [ratings, setRatings] = useState(() => {
+    const saved = localStorage.getItem("ratings");
+    return saved ? JSON.parse(saved) : {};
+  });
 
-  async function loadMovies() {
+  const fetchMovies = async (query) => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await api.get("", {
-        params: { s: search, page, type, y: year },
-      });
-      setMovies(response.data.Search || []);
-    } catch (error) {
-      console.error("Erro ao buscar filmes:", error);
+      const response = await api.get("", { params: { s: query, type: "movie" } });
+      setMovies(response.data?.Search || []);
+    } catch (err) {
+      setError("Não foi possível carregar os filmes.");
+      setMovies([]);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadMovies();
-  }, [page, type, year]);
+    fetchMovies(search);
+  }, []);
 
-  // ordenação
-  let sortedMovies = [...movies];
-  if (sort === "title") {
-    sortedMovies.sort((a, b) => a.Title.localeCompare(b.Title));
-  } else if (sort === "year") {
-    sortedMovies.sort((a, b) => parseInt(a.Year) - parseInt(b.Year));
-  }
-
-  // favoritos
-  function toggleFavorite(movie) {
-    let updated;
-    if (favorites.find((fav) => fav.imdbID === movie.imdbID)) {
-      updated = favorites.filter((fav) => fav.imdbID !== movie.imdbID);
+  // Favoritar
+  const toggleFavorite = (movie) => {
+    let updatedFavorites;
+    if (favorites.some((fav) => fav.imdbID === movie.imdbID)) {
+      updatedFavorites = favorites.filter((fav) => fav.imdbID !== movie.imdbID);
     } else {
-      updated = [...favorites, movie];
+      updatedFavorites = [...favorites, movie];
     }
-    setFavorites(updated);
-    localStorage.setItem("favorites", JSON.stringify(updated));
-  }
+    setFavorites(updatedFavorites);
+    localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+  };
+
+  // Avaliar com estrelas
+  const handleRating = (movieId, stars) => {
+    const updatedRatings = { ...ratings, [movieId]: stars };
+    setRatings(updatedRatings);
+    localStorage.setItem("ratings", JSON.stringify(updatedRatings));
+  };
 
   return (
     <div className="container mt-4">
-      <h1 className="text-center mb-4 fw-bold text-primary">
-        🎬 Catálogo de Filmes
-      </h1>
+      <h1 className="fw-bold text-primary text-center">Catálogo de Filmes</h1>
 
-      {/* Busca */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          setPage(1);
-          loadMovies();
+          fetchMovies(search);
         }}
+        className="d-flex justify-content-center mb-4"
       >
-        <div className="input-group mb-3 shadow-sm">
-          <input
-            type="text"
-            className="form-control"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Digite o nome do filme"
-          />
-          <button type="submit" className="btn btn-primary fw-bold">
-            Buscar
-          </button>
-        </div>
+        <input
+          type="text"
+          className="form-control me-2"
+          placeholder="Digite o nome do filme..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ maxWidth: "400px" }}
+        />
+        <button type="submit" className="btn btn-primary">Buscar</button>
       </form>
 
-      {/* Filtros */}
-      <div className="row mb-3">
-        <div className="col-md-4">
-          <select
-            className="form-select"
-            value={type}
-            onChange={(e) => {
-              setType(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="">Todos</option>
-            <option value="movie">Filmes</option>
-            <option value="series">Séries</option>
-            <option value="episode">Episódios</option>
-          </select>
-        </div>
-        <div className="col-md-4">
-          <input
-            type="number"
-            className="form-control"
-            value={year}
-            onChange={(e) => {
-              setYear(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Filtrar por ano (ex: 2005)"
-          />
-        </div>
-        <div className="col-md-4">
-          <select
-            className="form-select"
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-          >
-            <option value="">Sem ordenação</option>
-            <option value="title">Ordenar por título (A-Z)</option>
-            <option value="year">Ordenar por ano (antigo → recente)</option>
-          </select>
-        </div>
+      {loading && <p>Carregando...</p>}
+      {error && <p>{error}</p>}
+      {!loading && !error && movies.length === 0 && <p>Nenhum filme encontrado.</p>}
+
+      <div className="row justify-content-center">
+        {movies.map((movie, index) => (
+          <div key={`${movie.imdbID}-${index}`} className="col-md-3 mb-4">
+            <div className="card h-100 shadow-sm">
+              {movie?.Poster && movie.Poster !== "N/A" ? (
+                <img
+                  src={movie.Poster}
+                  alt={movie?.Title}
+                  className="card-img-top"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                  }}
+                />
+              ) : (
+                <div className="bg-secondary text-white text-center p-5">
+                  Sem imagem
+                </div>
+              )}
+              <div className="card-body text-center">
+                <h5 className="card-title">{movie?.Title}</h5>
+                <p className="card-text">{movie?.Year}</p>
+
+                {/* Avaliação com estrelas */}
+                <div className="stars mb-2">
+                  {[1,2,3,4,5].map((star) => (
+                    <span
+                      key={star}
+                      className={ratings[movie.imdbID] >= star ? "star filled" : "star"}
+                      onClick={() => handleRating(movie.imdbID, star)}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+
+                {/* Botão Favoritar */}
+                <button
+                  className="btn-fav mb-2"
+                  onClick={() => toggleFavorite(movie)}
+                >
+                  {favorites.some((fav) => fav.imdbID === movie.imdbID)
+                    ? "💔 Remover"
+                    : "❤️ Favoritar"}
+                </button>
+
+                <Link to={`/movie/${movie.imdbID}`} className="btn btn-primary btn-sm">
+                  Ver detalhes
+                </Link>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Lista de filmes */}
-      <div className="row">
-        {sortedMovies.length > 0 ? (
-          sortedMovies.map((movie) => (
-            <div className="col-md-6 mb-4" key={movie.imdbID}>
-              <div className="card h-100 shadow-lg border-0 rounded-3">
-                <div className="row g-0">
-                  <div className="col-md-4">
-                    {movie.Poster && movie.Poster !== "N/A" && (
-                      <img
-                        src={movie.Poster}
-                        className="img-fluid rounded-start"
-                        alt={movie.Title}
-                      />
-                    )}
-                  </div>
-                  <div className="col-md-8">
-                    <div className="card-body">
-                      <h5 className="card-title fw-bold">{movie.Title}</h5>
-                      <p className="card-text text-muted">
-                        📅 Ano: {movie.Year}
-                      </p>
-                      <p className="card-text">
-                        🎬 Tipo: {movie.Type === "movie" ? "Filme" : movie.Type}
-                      </p>
-                      <div className="d-flex gap-2 mt-3">
-                        <Link
-                          to={`/movie/${movie.imdbID}`}
-                          className="btn btn-primary"
-                        >
-                          Ver detalhes
-                        </Link>
-                        <button
-                          className={`btn ${favorites.find((fav) => fav.imdbID === movie.imdbID) ? "btn-danger" : "btn-outline-secondary"}`}
-                          onClick={() => toggleFavorite(movie)}
-                        >
-                          {favorites.find((fav) => fav.imdbID === movie.imdbID)
-                            ? "Remover"
-                            : "❤️ Favorito"}
-                        </button>
-                      </div>
+      {/* Seção de favoritos */}
+      {favorites.length > 0 && (
+        <div className="favorites-section mt-5">
+          <h2 className="text-center">⭐ Meus Favoritos</h2>
+          <div className="row justify-content-center">
+            {favorites.map((fav) => (
+              <div key={fav.imdbID} className="col-md-2 mb-3">
+                <div className="card shadow-sm fav-card">
+                  {fav?.Poster && fav.Poster !== "N/A" ? (
+                    <img
+                      src={fav.Poster}
+                      alt={fav?.Title}
+                      className="card-img-top"
+                      onError={(e) => { e.target.style.display = "none"; }}
+                    />
+                  ) : (
+                    <div className="bg-secondary text-white text-center p-3">
+                      Sem imagem
                     </div>
+                  )}
+                  <div className="card-body text-center">
+                    <h6 className="card-title">{fav?.Title}</h6>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <div className="alert alert-warning text-center">
-            Nenhum filme encontrado.
-          </div>
-        )}
-      </div>
-
-      {/* Paginação */}
-      <div className="d-flex justify-content-between mt-3">
-        <button
-          className="btn btn-secondary"
-          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-          disabled={page === 1}
-        >
-          Página anterior
-        </button>
-        <button
-          className="btn btn-primary"
-          onClick={() => setPage((prev) => prev + 1)}
-        >
-          Próxima página
-        </button>
-      </div>
-
-      {/* Favoritos */}
-      <div className="mt-5">
-        <h3 className="fw-bold">⭐ Meus Favoritos</h3>
-        {favorites.length > 0 ? (
-          <ul className="list-group shadow-sm">
-            {favorites.map((fav) => (
-              <li
-                key={fav.imdbID}
-                className="list-group-item d-flex justify-content-between align-items-center"
-              >
-                {fav.Title} ({fav.Year})
-                <Link
-                  to={`/movie/${fav.imdbID}`}
-                  className="btn btn-sm btn-primary"
-                >
-                  Ver detalhes
-                </Link>
-              </li>
             ))}
-          </ul>
-        ) : (
-          <p className="text-muted">Nenhum favorito ainda.</p>
-        )}
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

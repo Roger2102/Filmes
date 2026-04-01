@@ -1,56 +1,384 @@
-/* src/App.css */
-
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f9;
+/* Reset básico */
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
-h1 {
-  text-align: center;
+/* Corpo da página */
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f4f6f9;
   color: #333;
 }
 
+/* Container */
 .container {
-  max-width: 800px;
-  margin: 20px auto;
-  padding: 10px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-input {
-  width: 100%;
-  padding: 8px;
+/* Título principal */
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
   margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  text-align: center;
 }
 
-ul {
+/* Barra de busca */
+form {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+form input {
+  flex: 1;
+  max-width: 400px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+form button {
+  padding: 10px 20px;
+  margin-left: 10px;
+  border-radius: 6px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  transition: background 0.3s ease;
+}
+
+form button:hover {
+  background: #0056b3;
+}
+
+/* Grid de filmes */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+/* Card de filme */
+.card {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease-in-out;
+  width: 250px;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+/* Imagem do filme */
+.card-img-top {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+}
+
+/* Corpo do card */
+.card-body {
+  padding: 15px;
+  text-align: center;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.card-text {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+/* Estrelas de avaliação */
+.stars {
+  font-size: 1.2rem;
+  color: #f1c40f; /* amarelo ouro */
+  margin-bottom: 10px;
+}
+
+/* Botão Favoritar */
+.btn-fav {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.btn-fav:hover {
+  background: #c0392b;
+}
+
+.btn-fav:active {
+  transform: scale(0.95);
+}
+
+/* Botão Ver detalhes */
+.card .btn {
+  display: inline-block;
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: #fff;
+  border: none;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.card .btn:hover {
+  background: linear-gradient(135deg, #0056b3, #003f7f);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.card .btn:active {
+  transform: scale(0.95);
+}
+
+/* Botão Voltar */
+.btn-secondary {
+  display: inline-block;
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #6c757d, #545b62);
+  color: #fff;
+  border: none;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #545b62, #3d4348);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.btn-secondary:active {
+  transform: scale(0.95);
+}
+
+/* Placeholder quando não há imagem */
+.bg-secondary {
+  height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0e0e0;
+  color: #555;
+  font-weight: 600;
+}
+
+/* Container da página de detalhes */
+.movie-detail-container {
+  max-width: 1000px;
+  margin: 30px auto;
+  padding: 30px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+/* Título */
+.movie-detail-container h1 {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 25px;
+}
+
+/* Layout poster + informações */
+.movie-detail-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+/* Poster */
+.movie-poster {
+  flex: 1;
+  min-width: 280px;
+  max-width: 350px;
+}
+
+.movie-poster img {
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Lista de informações */
+.movie-info {
+  flex: 2;
+}
+
+.movie-info ul {
   list-style: none;
   padding: 0;
 }
 
-li {
-  background: #fff;
-  margin-bottom: 10px;
+.movie-info li {
   padding: 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 1rem;
+}
+
+.movie-info li strong {
+  color: #007bff;
+}
+
+/* Estrelas de avaliação */
+.stars {
+  font-size: 1.2rem;
+  color: #f1c40f; /* amarelo ouro */
+}
+
+/* Botão Voltar */
+.btn-secondary {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
   border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-li a {
+  background: linear-gradient(135deg, #6c757d, #545b62);
+  color: #fff;
+  border: none;
+  transition: all 0.3s ease;
   text-decoration: none;
-  color: #0077cc;
-  font-weight: bold;
 }
 
-li a:hover {
-  color: #005fa3;
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #545b62, #3d4348);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-img {
-  max-width: 200px;
+.btn-secondary:active {
+  transform: scale(0.95);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .movie-detail-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .movie-poster {
+    max-width: 100%;
+  }
+}
+
+/* Estrelas clicáveis */
+.stars {
+  font-size: 1.5rem;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.star {
+  margin: 0 2px;
+  transition: color 0.2s;
+}
+
+.star.filled {
+  color: #f1c40f; /* amarelo ouro */
+}
+
+/* Botão Favoritar */
+.btn-fav {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.btn-fav:hover {
+  background: #c0392b;
+}
+
+.btn-fav:active {
+  transform: scale(0.95);
+}
+
+/* Seção de favoritos */
+.favorites-section {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  margin-top: 50px;          /* espaço em relação ao catálogo */
+  border-top: 4px solid #f1c40f; /* linha dourada para destacar */
+}
+
+/* Título da seção */
+.favorites-section h2 {
+  margin-bottom: 25px;
+  font-weight: 700;
+  color: #2c3e50;
+  text-align: center;
+}
+
+/* Cards menores para favoritos */
+.fav-card {
+  width: 150px;
   border-radius: 8px;
-  margin-top: 10px;
+  overflow: hidden;
+  transition: transform 0.2s ease-in-out;
+}
+
+.fav-card:hover {
+  transform: translateY(-5px);
+}
+
+.fav-card img {
+  height: 220px;
+  object-fit: cover;
+}
+
+
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .card {
+    width: 90%;
+  }
 }
